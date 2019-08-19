@@ -2,12 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+// var mySigningKet = os.Get("MY_JWT_TOKEN")
 var mySigningKey = []byte("mysupersecretphrase")
+
+func homePage(w http.ResponseWriter, r *http.Request) {
+	validToken, err := GenerateJWT()
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	}
+
+	fmt.Fprintf(w, validToken)
+}
 
 func GenerateJWT() (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -29,12 +41,14 @@ func GenerateJWT() (string, error) {
 
 }
 
+func handleRequests() {
+	http.HandleFunc("/", homePage)
+
+	log.Fatal(http.ListenAndServe(":9001", nil))
+}
+
 func main() {
 	fmt.Println("My simple client")
 
-	tokenString, err := GenerateJWT()
-	if err != nil {
-		fmt.Println("Error generating token string")
-	}
-	fmt.Println(tokenString)
+	handleRequests()
 }
